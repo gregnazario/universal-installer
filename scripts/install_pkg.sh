@@ -9,6 +9,7 @@ INSTALL_USER=`whoami`
 
 # Configuration
 OVERRIDES_DIR="overrides"
+SKIP_OVERRIDES=false
 
 # Check if a command exists
 has_command() {
@@ -26,13 +27,55 @@ warn() {
     echo "Warning: $1" 1>&2
 }
 
-# Check if jq is installed
-if ! has_command jq; then
-    die "jq is required for package overrides. Please install it first."
-fi
+# Install jq if not present
+install_jq() {
+    if has_command jq; then
+        return 0
+    fi
+    
+    echo "jq not found. Attempting to install..."
+    
+    get_package_manager
+    
+    case "$PACKAGE_MANAGER" in
+        yum|dnf)
+            $PRE_COMMAND $PACKAGE_MANAGER install -y jq
+            ;;
+        apt|apt-get)
+            $PRE_COMMAND $PACKAGE_MANAGER update
+            $PRE_COMMAND $PACKAGE_MANAGER install -y jq
+            ;;
+        pacman)
+            $PRE_COMMAND pacman -Syu --noconfirm jq
+            ;;
+        apk)
+            $PRE_COMMAND apk --update add --no-cache jq
+            ;;
+        brew)
+            brew install jq
+            ;;
+        port)
+            port install jq
+            ;;
+        xbps)
+            $PRE_COMMAND xbps-install -y jq
+            ;;
+        *)
+            die "Cannot automatically install jq on this system. Please install it manually."
+            ;;
+    esac
+    
+    if ! has_command jq; then
+        die "Failed to install jq. Please install it manually."
+    fi
+}
 
 # Check package overrides
 check_package_override() {
+    if [ "$SKIP_OVERRIDES" = "true" ]; then
+        return 1
+    }
+    
     package="$1"
     pm="$2"
     
@@ -232,12 +275,14 @@ show_usage() {
     echo "Usage: $0 [OPTIONS] <package> [package...]"
     echo
     echo "Options:"
-    echo "  -h, --help     Show this help message"
-    echo "  -v, --version  Show version information"
+    echo "  -h, --help          Show this help message"
+    echo "  -v, --version       Show version information"
+    echo "  -s, --skip-overrides  Skip checking package overrides"
     echo
     echo "Examples:"
     echo "  $0 vim"
     echo "  $0 git curl wget"
+    echo "  $0 --skip-overrides vim"
 }
 
 # Main script execution
@@ -246,8 +291,9 @@ if [ $# -lt 1 ]; then
     exit 1
 fi
 
-for arg in "$@"; do
-    case "$arg" in
+# Parse options
+while [ $# -gt 0 ]; do
+    case "$1" in
         -h|--help)
             show_usage
             exit 0
@@ -256,8 +302,17 @@ for arg in "$@"; do
             echo "Version: 1.0.0"
             exit 0
             ;;
+        -s|--skip-overrides)
+            SKIP_OVERRIDES=true
+            shift
+            ;;
         *)
-            install_pkg "$arg"
+            # Install jq if needed (unless skipping overrides)
+            if [ "$SKIP_OVERRIDES" = "false" ]; then
+                install_jq
+            fi
+            install_pkg "$1"
+            shift
             ;;
     esac
 done

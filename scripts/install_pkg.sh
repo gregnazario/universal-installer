@@ -35,6 +35,10 @@ install_jq() {
     
     echo "jq not found. Attempting to install..."
     
+    PRE_COMMAND=""
+    if [ "$INSTALL_USER" != 'root' ]; then
+        PRE_COMMAND="sudo"
+    fi
     get_package_manager
     
     case "$PACKAGE_MANAGER" in
@@ -74,7 +78,7 @@ install_jq() {
 check_package_override() {
     if [ "$SKIP_OVERRIDES" = "true" ]; then
         return 1
-    }
+    fi
     
     package="$1"
     pm="$2"

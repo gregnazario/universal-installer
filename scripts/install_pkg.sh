@@ -7,6 +7,9 @@ set -e
 INSTALL_OS=`uname -s`
 INSTALL_USER=`whoami`
 
+# Configuration
+OVERRIDES_DIR="overrides"
+
 # Check if a command exists
 has_command() {
     command -v "$1" >/dev/null 2>&1
@@ -16,6 +19,42 @@ has_command() {
 die() {
     echo "Error: $1" 1>&2
     exit 1
+}
+
+# Warning message
+warn() {
+    echo "Warning: $1" 1>&2
+}
+
+# Check if jq is installed
+if ! has_command jq; then
+    die "jq is required for package overrides. Please install it first."
+fi
+
+# Check package overrides
+check_package_override() {
+    package="$1"
+    pm="$2"
+    
+    override_file="$OVERRIDES_DIR/$pm/$package.json"
+    
+    if [ ! -f "$override_file" ]; then
+        return 1
+    fi
+    
+    # Check if package should be skipped
+    if [ "$(jq -r ".install" "$override_file")" = "false" ]; then
+        reason="$(jq -r ".reason // \"No reason specified\"" "$override_file")"
+        warn "Skipping $package: $reason"
+        return 0
+    fi
+    
+    # Check if package exists
+    if [ "$(jq -r ".exists" "$override_file")" = "true" ]; then
+        return 0
+    fi
+    
+    return 1
 }
 
 # Determine the package manager
@@ -49,8 +88,10 @@ get_package_manager() {
                 PACKAGE_MANAGER="zypper"
             elif has_command emerge; then
                 PACKAGE_MANAGER="emerge"
+            elif has_command xbps-install; then
+                PACKAGE_MANAGER="xbps"
             else
-                die "Unable to find supported package manager (yum, dnf, pacman, apk, apt, apt-get, zypper, or emerge)"
+                die "Unable to find supported package manager (yum, dnf, pacman, apk, apt, apt-get, zypper, emerge, or xbps)"
             fi
             ;;
         # TODO: Add support for other OSes
@@ -87,6 +128,9 @@ is_package_installed() {
         port)
             port installed "$package" >/dev/null 2>&1
             ;;
+        xbps)
+            xbps-query "$package" >/dev/null 2>&1
+            ;;
         *)
             return 1
             ;;
@@ -97,12 +141,17 @@ is_package_installed() {
 install_pkg() {
     package="$1"
     
+    get_package_manager
+    
+    # Check package overrides first
+    if check_package_override "$package" "$PACKAGE_MANAGER"; then
+        return 0
+    fi
+    
     # Validate package name
     if ! echo "$package" | grep '^[a-zA-Z0-9._-]\+$' >/dev/null 2>&1; then
         die "Invalid package name: $package"
     fi
-
-    get_package_manager
     
     # Check if package is already installed
     if is_package_installed "$package" "$PACKAGE_MANAGER"; then
@@ -164,6 +213,11 @@ install_pkg() {
             ;;
         dnf)
             if ! $PRE_COMMAND dnf install "$package" -y; then
+                die "Failed to install package: $package"
+            fi
+            ;;
+        xbps)
+            if ! $PRE_COMMAND xbps-install -y "$package"; then
                 die "Failed to install package: $package"
             fi
             ;;

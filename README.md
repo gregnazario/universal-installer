@@ -1,37 +1,79 @@
-# universal-installer
-Universal Installer Scripts for package managers across shells
+# Universal Package Installer/Uninstaller
+
+A cross-platform package management tool that supports multiple package managers and provides a unified interface for installing and uninstalling packages.
+
+## Features
+
+- Supports multiple package managers:
+  - Linux: apt, apt-get, yum, dnf, pacman, apk, zypper, emerge, xbps
+  - macOS: Homebrew, MacPorts
+  - Windows: Chocolatey, Scoop, Winget
+- Auto-detection of available package managers
+- Package override system with JSON configuration
+- Cross-platform shell and PowerShell implementations
+
+## Installation
+
+1. Download the latest release from GitHub
+2. Extract the zip file
+3. Add the `scripts` directory to your PATH
 
 ## Usage
 
-### For Unix-like systems
-```sh
-# For Unix-like systems
-curl -sSL https://raw.githubusercontent.com/yourusername/universal-installer/main/install.sh | sh
+### Shell Version (Linux/macOS)
+
+Install packages:
+```bash
+./install_pkg.sh [OPTIONS] <package> [package...]
 ```
 
-Currently this supports the following package managers on macOS:
-- Homebrew
-- MacPorts
+Uninstall packages:
+```bash
+./uninstall_pkg.sh [OPTIONS] <package> [package...]
+```
 
-Currently this supports the following package managers on Linux:
-- dnf
-- apt-get
-- apt
-- pacman
-- zypper
-- yum
-- emerge
-- apk
+### PowerShell Version (Windows)
 
-Note, would be good to add support for more package managers on Linux.  This script is specifically built for POSIX compiliance, so it should work on any POSIX compliant shell.  
-
-### For Windows
+Install packages:
 ```powershell
-# For Windows
-iwr https://raw.githubusercontent.com/yourusername/universal-installer/main/install.ps1 -UseBasicP | iex
+.\install_pkg.ps1 [OPTIONS] <package> [package...]
 ```
 
-This supports the following package managers on Windows:
-- Chocolatey
-- Scoop
-- Windows Package Manager (winget)
+Uninstall packages:
+```powershell
+.\uninstall_pkg.ps1 [OPTIONS] <package> [package...]
+```
+
+### Options
+
+- `-h, --help`: Show help message
+- `-v, --version`: Show version information
+- `-s, --skip-overrides`: Skip checking package overrides
+- `-p, --package-manager <manager>`: Specify package manager
+
+## Package Overrides
+
+Create JSON files in the `overrides` directory to control package installation/uninstallation:
+
+```
+overrides/
+  ├── apt/
+  │   └── vim.json
+  ├── choco/
+  │   └── vim.json
+  └── brew/
+      └── vim.json
+```
+
+Example override file:
+```json
+{
+  "install": false,
+  "exists": true,
+  "reason": "Package is already installed via system package manager"
+}
+```
+
+## License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.

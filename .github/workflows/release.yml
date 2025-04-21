@@ -5,12 +5,17 @@ on:
     tags:
       - 'v*'  # Trigger on version tags (e.g., v0.1.0)
 
+permissions:
+  contents: write
+
 jobs:
   package:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -57,12 +62,27 @@ jobs:
           sha256sum universal-installer.zip > universal-installer.zip.sha256
 
       - name: Create Release
-        uses: softprops/action-gh-release@v1
+        uses: ncipollo/release-action@v1
         with:
-          tag_name: ${{ steps.version.outputs.tag }}
-          files: |
+          tag: ${{ steps.version.outputs.tag }}
+          name: Universal Installer ${{ steps.version.outputs.version }}
+          body: |
+            # Universal Installer ${{ steps.version.outputs.version }}
+
+            ## Changes
+            - Initial release
+
+            ## Package Contents
+            - Installation and uninstallation scripts
+            - Package manager detection scripts
+            - Documentation and license files
+
+            ## Verification
+            SHA-256 checksum: `$(cat universal-installer.zip.sha256)`
+          artifacts: |
             universal-installer.zip
             universal-installer.zip.sha256
-          generate_release_notes: true
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} 
+          token: ${{ secrets.GITHUB_TOKEN }}
+          draft: false
+          prerelease: false
+          allowUpdates: true 

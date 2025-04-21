@@ -86,6 +86,58 @@ The override files support the following keys:
 - `exists`: Set to `true` if the package exists, `false` if it doesn't
 - `reason`: Optional message explaining why the operation is being skipped
 
+## Release Guide
+
+### Creating a New Release
+
+1. Update the version number in `version.txt`
+2. Commit the version change:
+   ```bash
+   git add version.txt
+   git commit -m "Bump version to X.Y.Z"
+   ```
+3. Create and push a version tag:
+   ```bash
+   git tag vX.Y.Z
+   git push origin vX.Y.Z
+   ```
+
+The GitHub Actions workflow will automatically:
+- Read the version from `version.txt`
+- Update version numbers in all scripts
+- Create a release package (`universal-installer.zip`)
+- Generate a SHA-256 checksum file
+- Create a GitHub release with both files
+
+### Release Package Contents
+
+The release package (`universal-installer.zip`) contains:
+- All installation and uninstallation scripts
+- Package manager detection scripts
+- README.md and LICENSE files
+- Version information
+
+### Verifying the Release
+
+1. Download the release package and checksum file
+2. Verify the checksum:
+   ```bash
+   sha256sum -c universal-installer.zip.sha256
+   ```
+3. Extract the package and verify the contents
+4. Test the scripts on your target platform
+
+### Release Checklist
+
+- [ ] Update version in `version.txt`
+- [ ] Verify all scripts are working
+- [ ] Test on all supported platforms
+- [ ] Update documentation if needed
+- [ ] Create and push version tag
+- [ ] Verify GitHub release is created
+- [ ] Test the release package
+- [ ] Announce the release
+
 ## License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.

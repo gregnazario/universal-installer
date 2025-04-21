@@ -7,6 +7,7 @@ param (
     [string[]]$Packages,
 
     [Parameter()]
+    [Alias('p')]
     [ValidateSet('choco', 'scoop', 'winget')]
     [string]$PackageManager = 'auto',
 
@@ -118,14 +119,14 @@ function Test-PackageOverride {
         $override = Get-Content $overrideFile -Raw | ConvertFrom-Json
         
         # Check if package should be skipped
-        if ($override.install -eq $false) {
+        if ($override.uninstall -eq $false) {
             $reason = if ($override.reason) { $override.reason } else { "No reason specified" }
-            Write-Warning "Skipping $Package : $reason"
+            Write-Warning "Skipping uninstall of $Package : $reason"
             return $true
         }
         
         # Check if package exists
-        if ($override.exists -eq $true) {
+        if ($override.exists -eq $false) {
             return $true
         }
     }
@@ -137,7 +138,7 @@ function Test-PackageOverride {
     return $false
 }
 
-# Check if package is already installed
+# Check if package is installed
 function Test-PackageInstalled {
     param (
         [string]$Package,
@@ -160,8 +161,8 @@ function Test-PackageInstalled {
     return $false
 }
 
-# Install a package
-function Install-Package {
+# Uninstall a package
+function Uninstall-Package {
     param (
         [string]$Package,
         [string]$Manager
@@ -176,48 +177,48 @@ function Install-Package {
         return
     }
 
-    if (Test-PackageInstalled $Package $Manager) {
-        Write-Host "Package $Package is already installed"
+    if (-not (Test-PackageInstalled $Package $Manager)) {
+        Write-Host "Package $Package is not installed"
         return
     }
 
-    Write-Host "Installing $Package using $Manager..."
+    Write-Host "Uninstalling $Package using $Manager..."
     try {
         switch ($Manager) {
             'choco' {
-                choco install $Package -y --no-progress
+                choco uninstall $Package -y
                 if ($LASTEXITCODE -ne 0) {
-                    Write-ErrorAndExit "Failed to install package: $Package"
+                    Write-ErrorAndExit "Failed to uninstall package: $Package"
                 }
             }
             'scoop' {
-                scoop install $Package
+                scoop uninstall $Package
                 if ($LASTEXITCODE -ne 0) {
-                    Write-ErrorAndExit "Failed to install package: $Package"
+                    Write-ErrorAndExit "Failed to uninstall package: $Package"
                 }
             }
             'winget' {
-                winget install --id $Package --accept-source-agreements --accept-package-agreements
+                winget uninstall --id $Package --accept-source-agreements
                 if ($LASTEXITCODE -ne 0) {
-                    Write-ErrorAndExit "Failed to install package: $Package"
+                    Write-ErrorAndExit "Failed to uninstall package: $Package"
                 }
             }
         }
     }
     catch {
-        Write-ErrorAndExit "Error installing package $Package : $_"
+        Write-ErrorAndExit "Error uninstalling package $Package : $_"
     }
 }
 
 # Show usage information
 function Show-Usage {
-    Write-Host "Universal Package Installer - PowerShell Version"
+    Write-Host "Universal Package Uninstaller - PowerShell Version"
     Write-Host "Version: $SCRIPT_VERSION"
     Write-Host ""
     Write-Host "Usage: $SCRIPT_NAME [OPTIONS] <package> [package...]"
     Write-Host ""
     Write-Host "Description:"
-    Write-Host "  Installs packages using the available package manager (Chocolatey, Scoop, or Winget)."
+    Write-Host "  Uninstalls packages using the available package manager (Chocolatey, Scoop, or Winget)."
     Write-Host "  Automatically detects the best available package manager if not specified."
     Write-Host "  Supports package overrides through JSON files in the 'overrides' directory."
     Write-Host ""
@@ -229,7 +230,7 @@ function Show-Usage {
     Write-Host "Options:"
     Write-Host "  -h, --help                 Show this help message"
     Write-Host "  -v, --version              Show version information"
-    Write-Host "  --package-manager <manager> Specify package manager (choco, scoop, winget)"
+    Write-Host "  -p, --package-manager <manager> Specify package manager (choco, scoop, winget)"
     Write-Host "  --skip-overrides           Skip checking package overrides"
     Write-Host ""
     Write-Host "Package Manager Priority:"
@@ -242,28 +243,29 @@ function Show-Usage {
     Write-Host "  Example: overrides/choco/vim.json"
     Write-Host "  JSON structure:"
     Write-Host "    {"
-    Write-Host "      `"install`": false,"
-    Write-Host "      `"exists`": true,"
+    Write-Host "      `"uninstall`": false,"
+    Write-Host "      `"exists`": false,"
     Write-Host "      `"reason`": `"Optional reason for skipping`""
     Write-Host "    }"
     Write-Host ""
     Write-Host "Examples:"
-    Write-Host "  # Install a single package"
+    Write-Host "  # Uninstall a single package"
     Write-Host "  $SCRIPT_NAME vim"
     Write-Host ""
-    Write-Host "  # Install multiple packages"
+    Write-Host "  # Uninstall multiple packages"
     Write-Host "  $SCRIPT_NAME git curl wget"
     Write-Host ""
     Write-Host "  # Use specific package manager"
+    Write-Host "  $SCRIPT_NAME -p winget vim"
     Write-Host "  $SCRIPT_NAME --package-manager winget vim"
     Write-Host ""
     Write-Host "  # Skip override checks"
     Write-Host "  $SCRIPT_NAME --skip-overrides vim"
     Write-Host ""
     Write-Host "  # Combine options"
-    Write-Host "  $SCRIPT_NAME --package-manager choco --skip-overrides git curl wget"
+    Write-Host "  $SCRIPT_NAME -p choco --skip-overrides git curl wget"
     Write-Host ""
-    Write-Host "Note: This script requires administrator privileges to install packages."
+    Write-Host "Note: This script requires administrator privileges to uninstall packages."
 }
 
 # Main script execution
@@ -286,7 +288,7 @@ try {
                 Write-Host "$SCRIPT_NAME version $SCRIPT_VERSION"
                 exit 0
             }
-            { $_ -eq "--package-manager" } {
+            { $_ -eq "-p" -or $_ -eq "--package-manager" } {
                 # Skip the next argument as it's the package manager name
                 continue
             }
@@ -295,7 +297,7 @@ try {
                 continue
             }
             default {
-                Install-Package $arg $selectedManager
+                Uninstall-Package $arg $selectedManager
             }
         }
     }

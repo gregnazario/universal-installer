@@ -91,14 +91,14 @@ check_package_override() {
     fi
     
     # Check if package should be skipped
-    if [ "$(jq -r ".install" "$override_file")" = "false" ]; then
+    if [ "$(jq -r ".uninstall" "$override_file")" = "false" ]; then
         reason="$(jq -r ".reason // \"No reason specified\"" "$override_file")"
-        warn "Skipping $package: $reason"
+        warn "Skipping uninstall of $package: $reason"
         return 0
     fi
     
     # Check if package exists
-    if [ "$(jq -r ".exists" "$override_file")" = "true" ]; then
+    if [ "$(jq -r ".exists" "$override_file")" = "false" ]; then
         return 0
     fi
     
@@ -142,17 +142,13 @@ get_package_manager() {
                 die "Unable to find supported package manager (yum, dnf, pacman, apk, apt, apt-get, zypper, emerge, or xbps)"
             fi
             ;;
-        # TODO: Add support for other OSes
-        #windows)
-        #    PACKAGE_MANAGER="choco"
-        #    ;;
         *)
             die "Unsupported OS: $INSTALL_OS"
             ;;
     esac
 }
 
-# Check if package is already installed
+# Check if package is installed
 is_package_installed() {
     package="$1"
     pm="$2"
@@ -185,8 +181,8 @@ is_package_installed() {
     esac
 }
 
-# Install a package
-install_pkg() {
+# Uninstall a package
+uninstall_pkg() {
     package="$1"
     
     get_package_manager
@@ -201,9 +197,9 @@ install_pkg() {
         die "Invalid package name: $package"
     fi
     
-    # Check if package is already installed
-    if is_package_installed "$package" "$PACKAGE_MANAGER"; then
-        echo "Package $package is already installed"
+    # Check if package is installed
+    if ! is_package_installed "$package" "$PACKAGE_MANAGER"; then
+        echo "Package $package is not installed"
         return 0
     fi
 
@@ -212,61 +208,61 @@ install_pkg() {
         PRE_COMMAND="sudo"
     fi
 
-    echo "Installing $package using $PACKAGE_MANAGER..."
+    echo "Uninstalling $package using $PACKAGE_MANAGER..."
     case "$PACKAGE_MANAGER" in
         yum)
-            if ! $PRE_COMMAND yum install "$package" -y; then
-                die "Failed to install package: $package"
+            if ! $PRE_COMMAND yum remove "$package" -y; then
+                die "Failed to uninstall package: $package"
             fi
             ;;
         apt-get)
-            if ! $PRE_COMMAND apt-get install "$package" --no-install-recommends -y; then
-                die "Failed to install package: $package"
+            if ! $PRE_COMMAND apt-get remove "$package" -y; then
+                die "Failed to uninstall package: $package"
             fi
             ;;
         apt)
-            if ! $PRE_COMMAND apt install "$package" --no-install-recommends -y; then
-                die "Failed to install package: $package"
+            if ! $PRE_COMMAND apt remove "$package" -y; then
+                die "Failed to uninstall package: $package"
             fi
             ;;
         zypper)
-            if ! $PRE_COMMAND zypper install -y "$package"; then
-                die "Failed to install package: $package"
+            if ! $PRE_COMMAND zypper remove "$package" -y; then
+                die "Failed to uninstall package: $package"
             fi
             ;;
         emerge)
-            if ! $PRE_COMMAND emerge "$package"; then
-                die "Failed to install package: $package"
+            if ! $PRE_COMMAND emerge --unmerge "$package"; then
+                die "Failed to uninstall package: $package"
             fi
             ;;
         port)
-            if ! port install "$package"; then
-                die "Failed to install package: $package"
+            if ! port uninstall "$package"; then
+                die "Failed to uninstall package: $package"
             fi
             ;;
         brew)
-            if ! brew install "$package"; then
-                die "Failed to install package: $package"
+            if ! brew uninstall "$package"; then
+                die "Failed to uninstall package: $package"
             fi
             ;;
         pacman)
-            if ! $PRE_COMMAND pacman -Syu "$package" --noconfirm; then
-                die "Failed to install package: $package"
+            if ! $PRE_COMMAND pacman -R "$package" --noconfirm; then
+                die "Failed to uninstall package: $package"
             fi
             ;;
         apk)
-            if ! $PRE_COMMAND apk --update add --no-cache "$package"; then
-                die "Failed to install package: $package"
+            if ! $PRE_COMMAND apk del "$package"; then
+                die "Failed to uninstall package: $package"
             fi
             ;;
         dnf)
-            if ! $PRE_COMMAND dnf install "$package" -y; then
-                die "Failed to install package: $package"
+            if ! $PRE_COMMAND dnf remove "$package" -y; then
+                die "Failed to uninstall package: $package"
             fi
             ;;
         xbps)
-            if ! $PRE_COMMAND xbps-install -y "$package"; then
-                die "Failed to install package: $package"
+            if ! $PRE_COMMAND xbps-remove -y "$package"; then
+                die "Failed to uninstall package: $package"
             fi
             ;;
         *)
@@ -326,8 +322,8 @@ while [ $# -gt 0 ]; do
             if [ "$SKIP_OVERRIDES" = "false" ]; then
                 install_jq
             fi
-            install_pkg "$1"
+            uninstall_pkg "$1"
             shift
             ;;
     esac
-done
+done 

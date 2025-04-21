@@ -36,43 +36,13 @@ install_jq() {
     
     echo "jq not found. Attempting to install..."
     
-    PRE_COMMAND=""
-    if [ "$INSTALL_USER" != 'root' ]; then
-        PRE_COMMAND="sudo"
-    fi
-    get_package_manager
-    
-    case "$PACKAGE_MANAGER" in
-        yum|dnf)
-            $PRE_COMMAND $PACKAGE_MANAGER install -y jq
-            ;;
-        apt|apt-get)
-            $PRE_COMMAND $PACKAGE_MANAGER update
-            $PRE_COMMAND $PACKAGE_MANAGER install -y jq
-            ;;
-        pacman)
-            $PRE_COMMAND pacman -Syu --noconfirm jq
-            ;;
-        apk)
-            $PRE_COMMAND apk --update add --no-cache jq
-            ;;
-        brew)
-            brew install jq
-            ;;
-        port)
-            port install jq
-            ;;
-        xbps)
-            $PRE_COMMAND xbps-install -y jq
-            ;;
-        *)
-            die "Cannot automatically install jq on this system. Please install it manually."
-            ;;
-    esac
+    SKIP_OVERRIDES=true
+    install_pkg jq
     
     if ! has_command jq; then
         die "Failed to install jq. Please install it manually."
     fi
+    SKIP_OVERRIDES=false
 }
 
 # Check package overrides

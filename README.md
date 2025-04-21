@@ -14,6 +14,19 @@ A cross-platform package management tool that supports multiple package managers
 
 ## Installation
 
+### Quick Install (Linux/macOS)
+```bash
+# Download the latest release
+curl -L -O https://github.com/gregnazario/universal-installer/releases/download/v0.0.1/universal-installer.zip
+
+# Extract the package
+unzip universal-installer.zip
+
+# Add scripts to PATH
+export PATH="$PATH:$(pwd)/universal-installer/scripts"
+```
+
+### Manual Installation
 1. Download the latest release from GitHub
 2. Extract the zip file
 3. Add the `scripts` directory to your PATH

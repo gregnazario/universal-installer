@@ -1,0 +1,54 @@
+{
+    "apk": {
+        "packages": [
+            "alpine-sdk",
+            "coreutils"
+        ]
+    },
+    "apt": {
+        "packages": [
+            "build-essential"
+        ]
+    },
+    "apt-get": {
+        "packages": [
+            "build-essential"
+        ]
+    },
+    "dnf": {
+        "packages": [
+            "gcc",
+            "gcc-c++",
+            "make"
+        ]
+    },
+    "emerge": {
+        "packages": [
+            "sys-devel/gcc",
+            "sys-devel/gcc-c++",
+            "sys-devel/make"
+        ]
+    },
+    "pacman": {
+        "packages": [
+            "base-devel"
+        ]
+    },
+    "port": {
+        "packages": []
+    },
+    "yum": {
+        "packages": [
+            "gcc",
+            "gcc-c++",
+            "make"
+        ]
+    }
+    "zypper":{
+        "packages": [
+            "gcc",
+            "gcc-c++",
+            "make"
+        ]
+    }
+}

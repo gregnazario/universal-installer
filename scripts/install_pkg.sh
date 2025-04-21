@@ -84,7 +84,8 @@ check_package_override() {
     package="$1"
     pm="$2"
     
-    override_file="$OVERRIDES_DIR/$pm/$package.json"
+    # Check for package-specific override
+    override_file="$OVERRIDES_DIR/$package.json"
     
     if [ ! -f "$override_file" ]; then
         return 1

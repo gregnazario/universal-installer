@@ -110,7 +110,8 @@ function Test-PackageOverride {
         return $false
     }
     
-    $overrideFile = Join-Path $OVERRIDES_DIR "$Manager/$Package.json"
+    # Check for package-specific override
+    $overrideFile = Join-Path $OVERRIDES_DIR "$Package.json"
     if (-not (Test-Path $overrideFile)) {
         return $false
     }

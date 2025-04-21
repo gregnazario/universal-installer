@@ -303,7 +303,7 @@ while [ $# -gt 0 ]; do
             exit 0
             ;;
         -v|--version)
-            echo "Version: 1.0.0"
+            echo "Version: 0.1.0"
             exit 0
             ;;
         -s|--skip-overrides)

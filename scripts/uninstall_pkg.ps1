@@ -16,7 +16,7 @@ param (
 )
 
 # Script configuration
-$SCRIPT_VERSION = "1.0.0"
+$SCRIPT_VERSION = "0.1.0"
 $SCRIPT_NAME = $MyInvocation.MyCommand.Name
 $OVERRIDES_DIR = "overrides"
 

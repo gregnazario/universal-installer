@@ -53,19 +53,16 @@ Uninstall packages:
 
 ## Package Overrides
 
-Create JSON files in the `overrides` directory to control package installation/uninstallation:
+Create JSON files in the `overrides` directory to control package installation/uninstallation. Each package should have its own JSON file named after the package.
 
 ```
 overrides/
-  ├── apt/
-  │   └── vim.json
-  ├── choco/
-  │   └── vim.json
-  └── brew/
-      └── vim.json
+  ├── build-essential.json
+  ├── vim.json
+  └── git.json
 ```
 
-Example override file:
+Example override file (build-essential.json):
 ```json
 {
   "install": false,
@@ -73,6 +70,21 @@ Example override file:
   "reason": "Package is already installed via system package manager"
 }
 ```
+
+For uninstallation overrides, use the `uninstall` key instead:
+```json
+{
+  "uninstall": false,
+  "exists": false,
+  "reason": "Package is required by the system"
+}
+```
+
+The override files support the following keys:
+- `install`: Set to `false` to skip installation
+- `uninstall`: Set to `false` to skip uninstallation
+- `exists`: Set to `true` if the package exists, `false` if it doesn't
+- `reason`: Optional message explaining why the operation is being skipped
 
 ## License
 

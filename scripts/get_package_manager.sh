@@ -31,19 +31,16 @@ get_package_manager() {
             fi
             ;;
         Linux)
-            if has_command yum; then
-                PACKAGE_MANAGER="yum"
-            elif has_command dnf; then
-                echo "WARNING: dnf package manager support is experimental" 1>&2
+            if has_command dnf; then
                 PACKAGE_MANAGER="dnf"
+            elif has_command yum; then
+                PACKAGE_MANAGER="yum"
             elif has_command pacman; then
                 PACKAGE_MANAGER="pacman"
             elif has_command apk; then
                 PACKAGE_MANAGER="apk"
             elif has_command apt-get; then
                 PACKAGE_MANAGER="apt-get"
-            elif has_command apt; then
-                PACKAGE_MANAGER="apt"
             elif has_command zypper; then
                 PACKAGE_MANAGER="zypper"
             elif has_command emerge; then
@@ -51,7 +48,7 @@ get_package_manager() {
             elif has_command xbps-install; then
                 PACKAGE_MANAGER="xbps"
             else
-                die "Unable to find supported package manager (yum, dnf, pacman, apk, apt, apt-get, zypper, emerge, or xbps)"
+                die "Unable to find supported package manager (yum, dnf, pacman, apk, apt-get, zypper, emerge, or xbps)"
             fi
             ;;
         # TODO: Add support for other OSes

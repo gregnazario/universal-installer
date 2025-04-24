@@ -51,6 +51,13 @@ get_package_manager() {
                 die "Unable to find supported package manager (yum, dnf, pacman, apk, apt-get, zypper, emerge, or xbps)"
             fi
             ;;
+        FreeBSD)
+            if has_command pkg; then
+                PACKAGE_MANAGER="pkg"
+            else
+                die "Missing package manager pkg (https://www.freebsd.org/ports/)"
+            fi
+            ;;
         # TODO: Add support for other OSes
         #windows)
         #    PACKAGE_MANAGER="choco"

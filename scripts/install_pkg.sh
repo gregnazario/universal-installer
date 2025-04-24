@@ -109,6 +109,13 @@ get_package_manager() {
                 die "Unable to find supported package manager (yum, dnf, pacman, apk, apt-get, zypper, emerge, or xbps)"
             fi
             ;;
+        FreeBSD)
+            if has_command pkg; then
+                PACKAGE_MANAGER="pkg"
+            else
+                die "Missing package manager pkg (https://www.freebsd.org/ports/)"
+            fi
+            ;;
         # TODO: Add support for other OSes
         #windows)
         #    PACKAGE_MANAGER="choco"
@@ -145,6 +152,9 @@ is_package_installed() {
             ;;
         xbps)
             xbps-query "$package" >/dev/null 2>&1
+            ;;
+        pkg)
+            pkg info "$package" >/dev/null 2>&1
             ;;
         *)
             return 1
@@ -228,6 +238,11 @@ install_pkg() {
             ;;
         xbps)
             if ! $PRE_COMMAND xbps-install -y "$package"; then
+                die "Failed to install package: $package"
+            fi
+            ;;
+        pkg)
+            if ! $PRE_COMMAND pkg install -y "$package"; then
                 die "Failed to install package: $package"
             fi
             ;;

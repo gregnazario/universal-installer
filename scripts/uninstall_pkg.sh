@@ -110,6 +110,13 @@ get_package_manager() {
                 die "Unable to find supported package manager (yum, dnf, pacman, apk, apt-get, zypper, emerge, or xbps)"
             fi
             ;;
+        FreeBSD)
+            if has_command pkg; then
+                PACKAGE_MANAGER="pkg"
+            else
+                die "Missing package manager pkg (https://www.freebsd.org/ports/)"
+            fi
+        ;;
         *)
             die "Unsupported OS: $INSTALL_OS"
             ;;
@@ -142,6 +149,9 @@ is_package_installed() {
             ;;
         xbps)
             xbps-query "$package" >/dev/null 2>&1
+            ;;
+        pkg)
+            pkg info "$package" >/dev/null 2>&1
             ;;
         *)
             return 1
@@ -228,6 +238,10 @@ uninstall_pkg() {
                 die "Failed to uninstall package: $package"
             fi
             ;;
+        pkg)
+          if ! $PRE_COMMAND pkg delete -y "$package"; then
+              die "Failed to uninstall package: $package"
+          fi
         *)
             die "Unsupported package manager: $PACKAGE_MANAGER"
             ;;

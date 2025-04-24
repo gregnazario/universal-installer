@@ -163,11 +163,6 @@ install_pkg() {
         return 0
     fi
     
-    # Validate package name
-    if ! echo "$package" | grep '^[a-zA-Z0-9._-]\+$' >/dev/null 2>&1; then
-        die "Invalid package name: $package"
-    fi
-    
     # Check if package is already installed
     if is_package_installed "$package" "$PACKAGE_MANAGER"; then
         echo "Package $package is already installed"

@@ -1,5 +1,9 @@
 #!/bin/sh
 
+###### Universal uninstaller script
+# uninstall_pkg.sh v0.1.0
+######
+
 # Enable basic error handling
 set -e
 
@@ -117,6 +121,22 @@ get_package_manager() {
                 die "Missing package manager pkg (https://www.freebsd.org/ports/)"
             fi
         ;;
+        OpenBSD)
+            if has_command doas; then
+                PACKAGE_MANAGER="doas"
+            else
+                die "Missing package manager doas (https://www.openbsd.org/faq/faq14.html#pkg)"
+            fi
+            ;;
+        NetBSD)
+            if has_command pkgin; then
+                PACKAGE_MANAGER="pkgin"
+            elif has_command pkg_add; then
+                PACKAGE_MANAGER="pkg_add"
+            else
+                die "Missing package manager pkgin or pkg_add (https://www.netbsd.org/docs/pkgsrc/)"
+            fi
+            ;;
         *)
             die "Unsupported OS: $INSTALL_OS"
             ;;
@@ -239,9 +259,25 @@ uninstall_pkg() {
             fi
             ;;
         pkg)
-          if ! $PRE_COMMAND pkg delete -y "$package"; then
-              die "Failed to uninstall package: $package"
-          fi
+            if ! $PRE_COMMAND pkg delete -y "$package"; then
+                die "Failed to uninstall package: $package"
+            fi
+            ;;
+        pkg_add)
+            if ! $PRE_COMMAND pkg_add -r "$package"; then
+                die "Failed to uninstall package: $package"
+            fi
+            ;;
+        doas)
+            if ! $PRE_COMMAND doas pkg_delete "$package"; then
+                die "Failed to uninstall package: $package"
+            fi
+            ;;
+        pkgin)
+            if ! $PRE_COMMAND pkgin remove "$package"; then
+                die "Failed to uninstall package: $package"
+            fi
+            ;;
         *)
             die "Unsupported package manager: $PACKAGE_MANAGER"
             ;;

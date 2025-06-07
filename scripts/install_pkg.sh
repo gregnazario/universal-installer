@@ -1,4 +1,7 @@
 #!/bin/sh
+###### Universal installer script
+# install_pkg.sh v0.1.0
+######
 
 # Enable basic error handling
 set -e
@@ -116,10 +119,22 @@ get_package_manager() {
                 die "Missing package manager pkg (https://www.freebsd.org/ports/)"
             fi
             ;;
-        # TODO: Add support for other OSes
-        #windows)
-        #    PACKAGE_MANAGER="choco"
-        #    ;;
+        OpenBSD)
+            if has_command doas; then
+              PACKAGE_MANAGER="doas"
+            else
+              die "Missing package manager doas (https://www.openbsd.org/ports.html)"
+            fi
+            ;;
+        NetBSD)
+            if has_command pkgin; then
+              PACKAGE_MANAGER="pkgin"
+            elif has_command pkg_add; then
+              PACKAGE_MANAGER="pkg_add"
+            else
+              die "Missing package manager pkgin or pkg_add (https://www.netbsd.org/docs/pkgsrc/)"
+            fi
+            ;;
         *)
             die "Unsupported OS: $INSTALL_OS"
             ;;
@@ -155,6 +170,21 @@ is_package_installed() {
             ;;
         pkg)
             pkg info "$package" >/dev/null 2>&1
+            ;;
+        emerge)
+            emerge -q "$package" >/dev/null 2>&1
+            ;;
+        zypper)
+            zypper se -i "$package" >/dev/null 2>&1
+            ;;
+        doas)
+            doas pkg info "$package" >/dev/null 2>&1
+            ;;
+        pkgin)
+            pkgin -Q "$package" >/dev/null 2>&1
+            ;;
+        pkg_add)
+            pkg_add -I "$package" >/dev/null 2>&1
             ;;
         *)
             return 1
@@ -244,6 +274,21 @@ install_pkg() {
         pkg)
             if ! $PRE_COMMAND pkg install -y "$package"; then
                 die "Failed to install package: $package"
+            fi
+            ;;
+        doas)
+            if ! $PRE_COMMAND doas pkg_add "$package"; then
+          die "Failed to install package: $package"
+            fi
+            ;;
+        pkgin)
+            if ! $PRE_COMMAND pkgin install "$package"; then
+          die "Failed to install package: $package"
+            fi
+            ;;
+        pkg_add)
+            if ! $PRE_COMMAND pkg_add "$package"; then
+          die "Failed to install package: $package"
             fi
             ;;
         *)

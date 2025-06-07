@@ -58,10 +58,22 @@ get_package_manager() {
                 die "Missing package manager pkg (https://www.freebsd.org/ports/)"
             fi
             ;;
-        # TODO: Add support for other OSes
-        #windows)
-        #    PACKAGE_MANAGER="choco"
-        #    ;;
+        OpenBSD)
+            if has_command doas; then
+                PACKAGE_MANAGER="doas"
+            else
+                die "Missing package manager doas (https://www.openbsd.org/faq/faq14.html#pkg)"
+            fi
+            ;;
+        NetBSD)
+            if has_command pkgin; then
+                PACKAGE_MANAGER="pkgin"
+            elif has_command pkg_add; then
+                PACKAGE_MANAGER="pkg_add"
+            else
+                die "Missing package manager pkgin or pkg_add (https://www.netbsd.org/docs/pkgsrc/)"
+            fi
+            ;;
         *)
             die "Unsupported OS: $INSTALL_OS"
             ;;

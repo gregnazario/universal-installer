@@ -1,13 +1,16 @@
 # Universal Package Installer/Uninstaller
 
-A cross-platform package management tool that supports multiple package managers and provides a unified interface for installing and uninstalling packages.
+A cross-platform package management tool that supports multiple package managers and provides a unified interface for
+installing and uninstalling packages.
 
 ## Features
 
 - Supports multiple package managers:
-  - Linux: apt, apt-get, yum, dnf, pacman, apk, zypper, emerge, xbps
-  - macOS: Homebrew, MacPorts
-  - Windows: Chocolatey, Scoop, Winget
+    - Linux: apt, apt-get, yum, dnf, pacman, apk, zypper, emerge, xbps
+    - macOS: Homebrew, MacPorts
+    - FreeBSD: pkg
+    - OpenBSD: doas pkg_add
+    - NetBSD: pkgin, pkg_add
 - Auto-detection of available package managers
 - Package override system with JSON configuration
 - Cross-platform shell and PowerShell implementations
@@ -15,6 +18,7 @@ A cross-platform package management tool that supports multiple package managers
 ## Installation
 
 ### Quick Install (Linux/macOS)
+
 ```bash
 # Download the latest release
 curl -L -O https://github.com/gregnazario/universal-installer/releases/download/v0.0.1/universal-installer.zip
@@ -27,6 +31,7 @@ export PATH="$PATH:$(pwd)/universal-installer/scripts"
 ```
 
 ### Manual Installation
+
 1. Download the latest release from GitHub
 2. Extract the zip file
 3. Add the `scripts` directory to your PATH
@@ -36,11 +41,13 @@ export PATH="$PATH:$(pwd)/universal-installer/scripts"
 ### Shell Version (Linux/macOS)
 
 Install packages:
+
 ```bash
 ./install_pkg.sh [OPTIONS] <package> [package...]
 ```
 
 Uninstall packages:
+
 ```bash
 ./uninstall_pkg.sh [OPTIONS] <package> [package...]
 ```
@@ -48,11 +55,13 @@ Uninstall packages:
 ### PowerShell Version (Windows)
 
 Install packages:
+
 ```powershell
 .\install_pkg.ps1 [OPTIONS] <package> [package...]
 ```
 
 Uninstall packages:
+
 ```powershell
 .\uninstall_pkg.ps1 [OPTIONS] <package> [package...]
 ```
@@ -66,7 +75,8 @@ Uninstall packages:
 
 ## Package Overrides
 
-Create JSON files in the `overrides` directory to control package installation/uninstallation. Each package should have its own JSON file named after the package.
+Create JSON files in the `overrides` directory to control package installation/uninstallation. Each package should have
+its own JSON file named after the package.
 
 ```
 overrides/
@@ -76,6 +86,7 @@ overrides/
 ```
 
 Example override file (build-essential.json):
+
 ```json
 {
   "install": false,
@@ -85,6 +96,7 @@ Example override file (build-essential.json):
 ```
 
 For uninstallation overrides, use the `uninstall` key instead:
+
 ```json
 {
   "uninstall": false,
@@ -94,6 +106,7 @@ For uninstallation overrides, use the `uninstall` key instead:
 ```
 
 The override files support the following keys:
+
 - `install`: Set to `false` to skip installation
 - `uninstall`: Set to `false` to skip uninstallation
 - `exists`: Set to `true` if the package exists, `false` if it doesn't
@@ -116,6 +129,7 @@ The override files support the following keys:
    ```
 
 The GitHub Actions workflow will automatically:
+
 - Read the version from `version.txt`
 - Update version numbers in all scripts
 - Create a release package (`universal-installer.zip`)
@@ -125,6 +139,7 @@ The GitHub Actions workflow will automatically:
 ### Release Package Contents
 
 The release package (`universal-installer.zip`) contains:
+
 - All installation and uninstallation scripts
 - Package manager detection scripts
 - README.md and LICENSE files
